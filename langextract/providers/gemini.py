@@ -221,6 +221,22 @@ class GeminiLanguageModel(base_model.BaseLanguageModel):  # pylint: disable=too-
       return core_types.ScoredOutput(score=1.0, output=response.text)
 
     except Exception as e:
+      # pylint: disable=import-outside-toplevel
+      from google import genai
+
+      is_transient = False
+      if isinstance(e, genai.errors.ClientError):
+        # 429: Too Many Requests, 503: Service Unavailable
+        if e.code in (429, 503):
+          is_transient = True
+      elif isinstance(e, (TimeoutError, ConnectionError)):
+        is_transient = True
+
+      if is_transient:
+        raise exceptions.TransientError(
+            f'Transient Gemini API error: {str(e)}', original=e
+        ) from e
+
       raise exceptions.InferenceRuntimeError(
           f'Gemini API error: {str(e)}', original=e
       ) from e

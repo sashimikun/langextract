@@ -387,9 +387,28 @@ class Annotator:
           except AttributeError:
             pass
 
-        outputs = self._language_model.infer(batch_prompts=prompts, **kwargs)
-        if not isinstance(outputs, list):
-          outputs = list(outputs)
+        # Exponential backoff retry logic for transient errors
+        retry_delay = 1.0
+        max_retries = 5
+        outputs = []
+
+        for attempt in range(max_retries + 1):
+          try:
+            outputs = self._language_model.infer(batch_prompts=prompts, **kwargs)
+            if not isinstance(outputs, list):
+              outputs = list(outputs)
+            break
+          except exceptions.TransientError:
+            if attempt < max_retries:
+              logging.warning(
+                  "Transient error encountered during inference. Retrying in %s seconds...",
+                  retry_delay,
+              )
+              time.sleep(retry_delay)
+              retry_delay = min(retry_delay * 2, 60.0)
+            else:
+              logging.error("Max retries exceeded for transient error.")
+              raise
 
         for text_chunk, scored_outputs in zip(batch, outputs):
           if not isinstance(scored_outputs, list):

@@ -25,6 +25,7 @@ __all__ = [
     "InferenceError",
     "InferenceConfigError",
     "InferenceRuntimeError",
+    "TransientError",
     "InferenceOutputError",
     "InternalError",
     "InvalidDocumentError",
@@ -80,6 +81,13 @@ class InferenceRuntimeError(InferenceError):
     super().__init__(message)
     self.original = original
     self.provider = provider
+
+
+class TransientError(InferenceRuntimeError):
+  """Exception raised for transient errors that can be retried.
+
+  This includes network timeouts, rate limits (429), and service overload (503).
+  """
 
 
 class InferenceOutputError(LangExtractError):
