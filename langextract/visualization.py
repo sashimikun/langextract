@@ -74,6 +74,7 @@ _PALETTE: list[str] = [
 ]
 
 _VISUALIZATION_CSS = textwrap.dedent("""\
+    <meta charset="UTF-8">
     <style>
     .lx-highlight { position: relative; border-radius:3px; padding:1px 2px;}
     .lx-highlight .lx-tooltip {
