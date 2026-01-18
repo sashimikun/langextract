@@ -22,6 +22,10 @@ in one place to avoid duplication.
 GEMINI_PATTERNS = (r'^gemini',)
 GEMINI_PRIORITY = 10
 
+# Groq provider patterns
+GROQ_PATTERNS = (r'^groq/',)
+GROQ_PRIORITY = 10
+
 # OpenAI provider patterns
 OPENAI_PATTERNS = (
     r'^gpt-4',

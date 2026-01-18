@@ -32,6 +32,7 @@ registry = router  # Backward compat alias
 
 __all__ = [
     "gemini",
+    "groq",
     "openai",
     "ollama",
     "router",

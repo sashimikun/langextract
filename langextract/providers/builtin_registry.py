@@ -39,6 +39,11 @@ BUILTIN_PROVIDERS: list[ProviderConfig] = [
         'priority': patterns.GEMINI_PRIORITY,
     },
     {
+        'patterns': patterns.GROQ_PATTERNS,
+        'target': 'langextract.providers.groq:GroqLanguageModel',
+        'priority': patterns.GROQ_PRIORITY,
+    },
+    {
         'patterns': patterns.OLLAMA_PATTERNS,
         'target': 'langextract.providers.ollama:OllamaLanguageModel',
         'priority': patterns.OLLAMA_PRIORITY,

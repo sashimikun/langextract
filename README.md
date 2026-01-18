@@ -321,6 +321,27 @@ result = lx.extract(
 
 Note: OpenAI models require `fence_output=True` and `use_schema_constraints=False` because LangExtract doesn't implement schema constraints for OpenAI yet.
 
+## Using Groq Models
+
+LangExtract supports Groq-hosted models via the built-in Groq provider. Groq offers fast inference speeds using LPU™ Inference Engine.
+
+```python
+import langextract as lx
+import os
+
+result = lx.extract(
+    text_or_documents=input_text,
+    prompt_description=prompt,
+    examples=examples,
+    model_id="groq/llama3-8b-8192",  # 'groq/' prefix selects Groq provider
+    api_key=os.environ.get('GROQ_API_KEY'),
+    fence_output=True,
+    use_schema_constraints=False
+)
+```
+
+You can also use just the model ID if it doesn't conflict with other providers (like `llama3-8b-8192`), but the `groq/` prefix ensures the correct provider is used.
+
 ## Using Local LLMs with Ollama
 LangExtract supports local inference using Ollama, allowing you to run models without API keys:
 
