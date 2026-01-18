@@ -45,6 +45,15 @@ _FENCE_RE = re.compile(
 
 _THINK_TAG_RE = re.compile(r"<think>[\s\S]*?</think>\s*", re.IGNORECASE)
 
+_REFUSAL_PATTERNS = [
+    re.compile(r"I(?:'m| am) unable to", re.IGNORECASE),
+    re.compile(r"I cannot", re.IGNORECASE),
+    re.compile(r"I can't", re.IGNORECASE),
+    re.compile(r"does not contain", re.IGNORECASE),
+    re.compile(r"no extractable", re.IGNORECASE),
+    re.compile(r"no entities", re.IGNORECASE),
+]
+
 
 class FormatHandler:
   """Handles all format-specific logic for prompts and parsing.
@@ -174,6 +183,9 @@ class FormatHandler:
     try:
       parsed = self._parse_with_fallback(content, strict)
     except (yaml.YAMLError, json.JSONDecodeError) as e:
+      if self._is_refusal(content):
+        return []
+
       msg = (
           f"Failed to parse {self.format_type.value.upper()} content:"
           f" {str(e)[:200]}"
@@ -248,6 +260,13 @@ class FormatHandler:
     """Add code fences around content."""
     fence_type = self.format_type.value
     return f"```{fence_type}\n{content.strip()}\n```"
+
+  def _is_refusal(self, content: str) -> bool:
+    """Check if content matches any polite refusal pattern."""
+    for pattern in _REFUSAL_PATTERNS:
+      if pattern.search(content):
+        return True
+    return False
 
   def _is_valid_language_tag(
       self, lang: str | None, valid_tags: dict[data.FormatType, set[str]]
