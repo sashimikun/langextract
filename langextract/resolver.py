@@ -28,6 +28,7 @@ import functools
 import itertools
 import operator
 from typing import Final
+import unicodedata
 
 from absl import logging
 
@@ -450,6 +451,8 @@ class Resolver(AbstractResolver):
 
         if not isinstance(extraction_value, str):
           extraction_value = str(extraction_value)
+
+        extraction_value = unicodedata.normalize("NFKC", extraction_value)
 
         if index_suffix:
           index_key = extraction_class + index_suffix
