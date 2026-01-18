@@ -63,7 +63,7 @@ class TestOpenAIKwargsPassthrough(unittest.TestCase):
     mock_client.chat.completions.create.return_value = mock_response
 
     model = openai.OpenAILanguageModel(
-        model_id='gpt-5-nano',
+        model_id='gpt-4-nano',
         api_key='test-key',
     )
 
@@ -136,7 +136,7 @@ class TestOpenAIKwargsPassthrough(unittest.TestCase):
     mock_client.chat.completions.create.return_value = mock_response
 
     model = openai.OpenAILanguageModel(
-        model_id='gpt-5',
+        model_id='gpt-4',
         api_key='test-key',
         reasoning={'other_field': 'value'},
         reasoning_effort='maximal',
@@ -194,7 +194,7 @@ class TestOpenAIKwargsPassthrough(unittest.TestCase):
     mock_client.chat.completions.create.return_value = mock_response
 
     model = openai.OpenAILanguageModel(
-        model_id='gpt-5',
+        model_id='gpt-4',
         api_key='test-key',
     )
 
@@ -202,6 +202,34 @@ class TestOpenAIKwargsPassthrough(unittest.TestCase):
 
     call_args = mock_client.chat.completions.create.call_args
     self.assertEqual(call_args.kwargs.get('reasoning'), {'effort': 'minimal'})
+
+  @mock.patch('openai.OpenAI')
+  def test_gpt5_reasoning_effort_passthrough(self, mock_openai_class):
+    """Test that reasoning_effort is passed directly for gpt5-mini."""
+    mock_client = mock.Mock()
+    mock_openai_class.return_value = mock_client
+
+    mock_response = mock.Mock()
+    mock_response.choices = [
+        mock.Mock(message=mock.Mock(content='{"result": "test"}'))
+    ]
+    mock_client.chat.completions.create.return_value = mock_response
+
+    model = openai.OpenAILanguageModel(
+        model_id='gpt5-mini',
+        api_key='test-key',
+        reasoning_effort='high',
+    )
+
+    list(model.infer(['test prompt']))
+
+    call_args = mock_client.chat.completions.create.call_args
+    kwargs = call_args.kwargs
+
+    self.assertEqual(kwargs.get('reasoning_effort'), 'high')
+    # Ensure it wasn't normalized
+    if 'reasoning' in kwargs:
+        self.assertNotIn('effort', kwargs['reasoning'])
 
 
 class TestOllamaAuthSupport(parameterized.TestCase):

@@ -122,7 +122,9 @@ class OpenAILanguageModel(base_model.BaseLanguageModel):
     """
     result = config.copy()
 
-    if 'reasoning_effort' in result:
+    # Skip normalization for GPT-5 models which support reasoning_effort directly
+    is_gpt5 = self.model_id.lower().startswith(('gpt-5', 'gpt5'))
+    if not is_gpt5 and 'reasoning_effort' in result:
       effort = result.pop('reasoning_effort')
       reasoning = result.get('reasoning', {}) or {}
       reasoning.setdefault('effort', effort)
@@ -175,6 +177,7 @@ class OpenAILanguageModel(base_model.BaseLanguageModel):
           'stop',
           'logprobs',
           'top_logprobs',
+          'reasoning_effort',
           'reasoning',
           'response_format',
       ]:
