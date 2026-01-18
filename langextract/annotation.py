@@ -217,6 +217,7 @@ class Annotator:
       context_window_chars: int | None = None,
       show_progress: bool = True,
       tokenizer: tokenizer_lib.Tokenizer | None = None,
+      filter_example_data: bool = True,
       **kwargs,
   ) -> Iterator[data.AnnotatedDocument]:
     """Annotates a sequence of documents with NLP extractions.
@@ -244,6 +245,8 @@ class Annotator:
         resolution across chunk boundaries. Defaults to None (disabled).
       show_progress: Whether to show progress bar. Defaults to True.
       tokenizer: Optional tokenizer to use. If None, uses default tokenizer.
+      filter_example_data: Whether to filter out extractions that match the
+        provided example data. Defaults to True.
       **kwargs: Additional arguments passed to LanguageModel.infer and Resolver.
 
     Yields:
@@ -265,6 +268,7 @@ class Annotator:
           show_progress,
           context_window_chars=context_window_chars,
           tokenizer=tokenizer,
+          filter_example_data=filter_example_data,
           **kwargs,
       )
     else:
@@ -278,6 +282,7 @@ class Annotator:
           show_progress,
           context_window_chars=context_window_chars,
           tokenizer=tokenizer,
+          filter_example_data=filter_example_data,
           **kwargs,
       )
 
@@ -291,6 +296,7 @@ class Annotator:
       show_progress: bool = True,
       context_window_chars: int | None = None,
       tokenizer: tokenizer_lib.Tokenizer | None = None,
+      filter_example_data: bool = True,
       **kwargs,
   ) -> Iterator[data.AnnotatedDocument]:
     """Single-pass annotation with stable ordering and streaming emission.
@@ -423,7 +429,20 @@ class Annotator:
               **kwargs,
           )
 
-          for extraction in aligned_extractions:
+          filtered_extractions = aligned_extractions
+          if filter_example_data:
+            # Collect extraction text from examples to filter out.
+            example_texts = set()
+            for example in self._prompt_generator.template.examples:
+              for ex_extraction in example.extractions:
+                example_texts.add(ex_extraction.extraction_text)
+
+            filtered_extractions = [
+                e for e in aligned_extractions
+                if e.extraction_text not in example_texts
+            ]
+
+          for extraction in filtered_extractions:
             per_doc[text_chunk.document_id].append(extraction)
 
           if show_progress and text_chunk.char_interval is not None:
@@ -450,6 +469,7 @@ class Annotator:
       show_progress: bool = True,
       context_window_chars: int | None = None,
       tokenizer: tokenizer_lib.Tokenizer | None = None,
+      filter_example_data: bool = True,
       **kwargs,
   ) -> Iterator[data.AnnotatedDocument]:
     """Sequential extraction passes logic for improved recall."""
@@ -483,6 +503,7 @@ class Annotator:
           show_progress=show_progress if pass_num == 0 else False,
           context_window_chars=context_window_chars,
           tokenizer=tokenizer,
+          filter_example_data=filter_example_data,
           **kwargs,
       ):
         doc_id = annotated_doc.document_id
@@ -536,6 +557,7 @@ class Annotator:
       context_window_chars: int | None = None,
       show_progress: bool = True,
       tokenizer: tokenizer_lib.Tokenizer | None = None,
+      filter_example_data: bool = True,
       **kwargs,
   ) -> data.AnnotatedDocument:
     """Annotates text with NLP extractions for text input.
@@ -557,6 +579,8 @@ class Annotator:
         (disabled).
       show_progress: Whether to show progress bar. Defaults to True.
       tokenizer: Optional tokenizer instance.
+      filter_example_data: Whether to filter out extractions that match the
+        provided example data. Defaults to True.
       **kwargs: Additional arguments for inference and resolver_lib.
 
     Returns:
@@ -588,6 +612,7 @@ class Annotator:
             context_window_chars=context_window_chars,
             show_progress=show_progress,
             tokenizer=tokenizer,
+            filter_example_data=filter_example_data,
             **kwargs,
         )
     )
