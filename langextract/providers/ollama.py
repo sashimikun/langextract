@@ -348,10 +348,6 @@ class OllamaLanguageModel(base_model.BaseLanguageModel):
       )
 
     options: dict[str, Any] = {}
-    if keep_alive is not None:
-      options['keep_alive'] = keep_alive
-    else:
-      options['keep_alive'] = _DEFAULT_KEEP_ALIVE
 
     if seed is not None:
       options['seed'] = seed
@@ -394,6 +390,9 @@ class OllamaLanguageModel(base_model.BaseLanguageModel):
         'api/generate',
     )
 
+    if keep_alive is None:
+      keep_alive = _DEFAULT_KEEP_ALIVE
+
     payload: dict[str, Any] = {
         'model': model,
         'prompt': prompt,
@@ -401,6 +400,7 @@ class OllamaLanguageModel(base_model.BaseLanguageModel):
         'stream': False,
         'raw': raw,
         'options': options,
+        'keep_alive': keep_alive,
     }
 
     if structured_output_format is not None:
