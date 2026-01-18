@@ -62,6 +62,7 @@ def extract(
     prompt_validation_strict: bool = False,
     show_progress: bool = True,
     tokenizer: tokenizer_lib.Tokenizer | None = None,
+    filter_example_data: bool = True,
 ) -> list[data.AnnotatedDocument] | data.AnnotatedDocument:
   """Extracts structured information from text.
 
@@ -160,6 +161,8 @@ def extract(
       prompt_validation_strict: When True and prompt_validation_level is ERROR,
         raises on non-exact matches (MATCH_FUZZY, MATCH_LESSER). Defaults to False.
       show_progress: Whether to show progress bar during extraction. Defaults to True.
+      filter_example_data: Whether to filter out extractions that match the
+        provided example data. Defaults to True.
 
   Returns:
       An AnnotatedDocument with the extracted information when input is a
@@ -344,6 +347,7 @@ def extract(
         show_progress=show_progress,
         max_workers=max_workers,
         tokenizer=tokenizer,
+        filter_example_data=filter_example_data,
         **alignment_kwargs,
     )
     return result
@@ -360,6 +364,7 @@ def extract(
         show_progress=show_progress,
         max_workers=max_workers,
         tokenizer=tokenizer,
+        filter_example_data=filter_example_data,
         **alignment_kwargs,
     )
     return list(result)
