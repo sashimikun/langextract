@@ -86,18 +86,19 @@ Ships with langextract, dependencies included:
 Ships with langextract, but requires extra installation:
 - **OpenAI** (`openai.py`): OpenAI's GPT models
   - Code included in package
-  - Requires: `pip install langextract[openai]` to install OpenAI SDK
+  - Requires: `uv pip install langextract[openai]` (or `pip install langextract[openai]`) to install OpenAI SDK
   - Future: May be moved to external plugin package
 
 ### 3. External Plugins (Third-party)
 Separate packages that extend LangExtract with new providers:
-- **Installed separately**: `pip install langextract-yourprovider`
+- **Installed separately**: `uv pip install langextract-yourprovider` (or `pip install langextract-yourprovider`)
 - **Auto-discovered**: Uses Python entry points for automatic registration
 - **Zero configuration**: Import langextract and the provider is available
 - **Independent updates**: Update providers without touching core
 
 ```python
 # Install a third-party provider
+# uv pip install langextract-yourprovider
 pip install langextract-yourprovider
 
 # Use it immediately - no imports needed!
@@ -285,7 +286,7 @@ yourprovider = "langextract_yourprovider:YourProviderLanguageModel"
 - [ ] Handle schema in provider's `__init__()` and `infer()`
 
 #### ☐ **5. Testing**
-- [ ] Install plugin with `pip install -e .`
+- [ ] Install plugin with `uv pip install -e .` (or `pip install -e .`)
 - [ ] Test that your provider loads and handles basic inference
 - [ ] Verify schema support works (if implemented)
 
@@ -296,7 +297,7 @@ yourprovider = "langextract_yourprovider:YourProviderLanguageModel"
 - [ ] Document any provider-specific parameters
 
 #### ☐ **7. Distribution & Community**
-- [ ] Test installation with `pip install -e .`
+- [ ] Test installation with `uv pip install -e .` (or `pip install -e .`)
 - [ ] Build package with `python -m build`
 - [ ] Test in clean environment
 - [ ] Publish to PyPI with `twine upload dist/*`
@@ -310,7 +311,9 @@ External plugins are the recommended approach for adding new providers. They're 
 #### For Users (Installing an External Plugin)
 Simply install the plugin package:
 ```bash
-pip install langextract-yourprovider
+uv pip install langextract-yourprovider
+# or: pip install langextract-yourprovider
+
 # That's it! The provider is now available in langextract
 ```
 
@@ -377,12 +380,12 @@ class MyProviderLanguageModel(lx.inference.BaseLanguageModel):
 
 4. Publish your package to PyPI:
 ```bash
-pip install build twine
+uv pip install build twine  # or pip install build twine
 python -m build
 twine upload dist/*
 ```
 
-Now users can install and use your provider with just `pip install langextract-myprovider`!
+Now users can install and use your provider with just `uv pip install langextract-myprovider` (or `pip install langextract-myprovider`)!
 
 ### Adding Schema Support
 
@@ -554,15 +557,15 @@ ValueError: No provider registered for model_id='unknown-model'
 ```
 **Solutions**:
 1. Manually trigger loading: `lx.providers.load_plugins_once()`
-2. Check entry points are installed: `pip show -f your-package`
+2. Check entry points are installed: `uv pip show -f your-package` (or `pip show -f your-package`)
 3. Verify no typos in `pyproject.toml` entry point
-4. Ensure package is installed: `pip list | grep your-package`
+4. Ensure package is installed: `uv pip list | grep your-package` (or `pip list | grep your-package`)
 
 ### Missing Dependencies
 ```python
 InferenceConfigError: OpenAI provider requires openai package
 ```
-**Solution**: Install optional dependencies: `pip install langextract[openai]`
+**Solution**: Install optional dependencies: `uv pip install langextract[openai]` (or `pip install langextract[openai]`)
 
 ### Schema Not Working
 ```python

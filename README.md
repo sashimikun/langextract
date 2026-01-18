@@ -162,15 +162,31 @@ See an example of the Vertex AI Batch API usage in [this example](docs/examples/
 
 ## Installation
 
+We recommend using [uv](https://github.com/astral-sh/uv) for faster installation and environment management, but standard `pip` works as well.
+
 ### From PyPI
+
+**Using uv (Recommended):**
+
+```bash
+uv pip install langextract
+```
+
+**Using pip:**
 
 ```bash
 pip install langextract
 ```
 
-*Recommended for most users. For isolated environments, consider using a virtual environment:*
+*For isolated environments, consider using a virtual environment:*
 
 ```bash
+# Using uv
+uv venv langextract_env
+source langextract_env/bin/activate  # On Windows: langextract_env\Scripts\activate
+uv pip install langextract
+
+# Using standard python
 python -m venv langextract_env
 source langextract_env/bin/activate  # On Windows: langextract_env\Scripts\activate
 pip install langextract
@@ -187,13 +203,14 @@ LangExtract uses modern Python packaging with `pyproject.toml` for dependency ma
 git clone https://github.com/google/langextract.git
 cd langextract
 
-# For basic installation:
+# Using uv (Recommended)
+uv pip install -e .           # Basic installation
+uv pip install -e ".[dev]"    # For development (includes linting tools)
+uv pip install -e ".[test]"   # For testing (includes pytest)
+
+# Using pip
 pip install -e .
-
-# For development (includes linting tools):
 pip install -e ".[dev]"
-
-# For testing (includes pytest):
 pip install -e ".[test]"
 ```
 
@@ -303,7 +320,7 @@ See the detailed guide in [Provider System Documentation](langextract/providers/
 
 ## Using OpenAI Models
 
-LangExtract supports OpenAI models (requires optional dependency: `pip install langextract[openai]`):
+LangExtract supports OpenAI models (requires optional dependency: `uv pip install langextract[openai]` or `pip install langextract[openai]`):
 
 ```python
 import langextract as lx
@@ -391,7 +408,7 @@ git clone https://github.com/google/langextract.git
 cd langextract
 
 # Install with test dependencies
-pip install -e ".[test]"
+uv pip install -e ".[test]"  # or pip install -e ".[test]"
 
 # Run all tests
 pytest tests

@@ -73,7 +73,7 @@ For automatic formatting checks before each commit:
 
 ```bash
 # Install pre-commit
-pip install pre-commit
+uv pip install pre-commit  # or pip install pre-commit
 
 # Install the git hooks
 pre-commit install
