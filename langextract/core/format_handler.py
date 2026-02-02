@@ -267,12 +267,63 @@ class FormatHandler:
     except (yaml.YAMLError, json.JSONDecodeError):
       if strict:
         raise
+
       # Reasoning models (DeepSeek-R1, QwQ) emit <think> tags before JSON.
       if _THINK_TAG_RE.search(content):
         stripped = _THINK_TAG_RE.sub("", content).strip()
-        if self.format_type == data.FormatType.YAML:
-          return yaml.safe_load(stripped)
-        return json.loads(stripped)
+        try:
+          if self.format_type == data.FormatType.YAML:
+            return yaml.safe_load(stripped)
+          return json.loads(stripped)
+        except (yaml.YAMLError, json.JSONDecodeError):
+          # Fall through to unescaped quote handling if <think> stripping didn't fix it
+          content = stripped
+
+      if self.format_type == data.FormatType.JSON:
+        # Attempt to fix unescaped quotes in JSON strings.
+        # This looks for patterns like: "key": "some "quoted" text"
+        # and escapes the internal quotes: "key": "some \"quoted\" text"
+        # Regex explanation:
+        # (?<=\":\s\")  - Lookbehind: Preceded by ": "
+        # .*?           - Match non-greedily (the content of the string)
+        # (?=\")        - Lookahead: Followed by " (end of string)
+        # But this is tricky because valid JSON can have escaped quotes.
+        # A simpler heuristic for common malformed JSON from LLMs:
+        # Find string values and escape quotes inside them.
+
+        # Pattern matches: "key": "value" where value might contain unescaped quotes
+        # We assume keys are well-formed.
+        def escape_inner_quotes(match):
+          prefix = match.group(1)  # "key": "
+          value = match.group(2)   # content inside quotes
+          suffix = match.group(3)  # "
+
+          # Escape existing backslashes first to avoid double escaping if we run this multiple times?
+          # Actually, if we just want to fix unescaped quotes:
+          # We need to distinguish between " that ends the string and " that is part of the content.
+          # This is hard with regex alone.
+          # However, often the LLM outputs: "field": "some "text" here", ...
+          # The next character after the closing quote should be , or } or ] or whitespace.
+
+          # If we assume the structure "key": "value", we can look for the next , or } or ]
+          # and treat everything up to that as the value, minus the enclosing quotes.
+
+          # Let's try a replacement that targets specific unescaped quotes preceded by word chars
+          # and followed by word chars/space, which is common in prose.
+          escaped_value = value.replace('"', '\\"')
+          return f'{prefix}{escaped_value}{suffix}'
+
+        # This regex tries to capture the content of a JSON string value.
+        # It looks for "key": "..."
+        # It stops at ", or "} or "]
+        pattern = r'("[^"]+":\s*")((?:[^"]|"(?!,|\s*\}|\s*\]))*?)("(?=\s*(?:,|}|])))'
+
+        try:
+           fixed_content = re.sub(pattern, escape_inner_quotes, content)
+           return json.loads(fixed_content)
+        except (json.JSONDecodeError, re.error):
+           pass
+
       raise
 
   def _extract_content(self, text: str) -> str:
